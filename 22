@@ -32,6 +32,8 @@ int is_valid_phone(char *str);
 int is_valid_birth(char *str);
 int input_string_client(int fd, char *str, int size);
 int input_int_client(int fd, int *num);
+int send_text(int fd, const char *text);
+int send_input(int fd, const char *prompt);
 
 int send_all(int fd, const void *buf, size_t len)
 {
@@ -46,7 +48,7 @@ int send_all(int fd, const void *buf, size_t len)
     return 0;
 }
 
-int send_input(int fd, const char *text)
+int send_text(int fd, const char *text)
 {
     char header[64];
     int len = (int)strlen(text);
@@ -180,7 +182,7 @@ void service_client(int client_fd)
 
     while (1)
     {
-        send_input(client_fd,
+        send_text(client_fd,
             "\n < 학생 파일 관리 프로그램 > \n"
             "1. 학생 정보 입력\n"
             "2. 전체 학생 정보 리스트로 보기\n"
@@ -192,15 +194,15 @@ void service_client(int client_fd)
 
         if (!input_int_client(client_fd, &menu))
         {
-            send_input(client_fd, "잘못입력하셨습니다.\n");
-            send_input(client_fd, "다시 입력해주세요.\n");
+            send_text(client_fd, "잘못입력하셨습니다.\n");
+            send_text(client_fd, "다시 입력해주세요.\n");
             send_end(client_fd);
             continue;
         }
 
         if (menu == 0)
         {
-            send_input(client_fd, "프로그램을 종료합니다!\n");
+            send_text(client_fd, "프로그램을 종료합니다!\n");
             send_exit_msg(client_fd);
             break;
         }
@@ -226,8 +228,8 @@ void service_client(int client_fd)
         }
         else
         {
-            send_input(client_fd, "잘못 입력하셨습니다.\n");
-            send_input(client_fd, "다시 입력해주세요.\n");
+            send_text(client_fd, "잘못 입력하셨습니다.\n");
+            send_text(client_fd, "다시 입력해주세요.\n");
             send_end(client_fd);
         }
     }
@@ -338,7 +340,7 @@ void input_student(int client_fd)
     fp = fopen(FILE_NAME, "ab");
     if (fp == NULL)
     {
-        send_input(client_fd, "파일을 열 수 없습니다.\n");
+        send_text(client_fd, "파일을 열 수 없습니다.\n");
         return;
     }
 
@@ -348,15 +350,15 @@ void input_student(int client_fd)
         return;
     }
 
-    send_input(client_fd, "학생 정보를 입력해주세요!\n");
+    send_text(client_fd, "학생 정보를 입력해주세요!\n");
 
     while (1)
     {
         send_input(client_fd, "ID : ");
         if (input_int_client(client_fd, &s.id))
             break;
-        send_input(client_fd, "잘못입력하셨습니다.\n");
-        send_input(client_fd, "다시 입력해주세요.\n");
+        send_text(client_fd, "잘못입력하셨습니다.\n");
+        send_text(client_fd, "다시 입력해주세요.\n");
     }
 
     while (1)
@@ -364,8 +366,8 @@ void input_student(int client_fd)
         send_input(client_fd, "이름 : ");
         if (input_string_client(client_fd, s.name, sizeof(s.name)))
             break;
-        send_input(client_fd, "잘못입력하셨습니다.\n");
-        send_input(client_fd, "다시 입력해주세요.\n");
+        send_text(client_fd, "잘못입력하셨습니다.\n");
+        send_text(client_fd, "다시 입력해주세요.\n");
     }
 
     while (1)
@@ -373,8 +375,8 @@ void input_student(int client_fd)
         send_input(client_fd, "주소 : ");
         if (input_string_client(client_fd, s.address, sizeof(s.address)))
             break;
-        send_input(client_fd, "잘못입력하셨습니다.\n");
-        send_input(client_fd, "다시 입력해주세요.\n");
+        send_text(client_fd, "잘못입력하셨습니다.\n");
+        send_text(client_fd, "다시 입력해주세요.\n");
     }
 
     while (1)
@@ -382,8 +384,8 @@ void input_student(int client_fd)
         send_input(client_fd, "전화번호 : ");
         if (input_string_client(client_fd, s.number, sizeof(s.number)) && is_valid_phone(s.number))
             break;
-        send_input(client_fd, "잘못입력하셨습니다.\n");
-        send_input(client_fd, "다시 입력해주세요.\n");
+        send_text(client_fd, "잘못입력하셨습니다.\n");
+        send_text(client_fd, "다시 입력해주세요.\n");
     }
 
     while (1)
@@ -391,15 +393,15 @@ void input_student(int client_fd)
         send_input(client_fd, "생년월일 : ");
         if (input_string_client(client_fd, s.birth, sizeof(s.birth)) && is_valid_birth(s.birth))
             break;
-        send_input(client_fd, "잘못입력하셨습니다.\n");
-        send_input(client_fd, "다시 입력해주세요.\n");
+        send_text(client_fd, "잘못입력하셨습니다.\n");
+        send_text(client_fd, "다시 입력해주세요.\n");
     }
 
     fwrite(&s, sizeof(STUDENT), 1, fp);
     unlock_record(fp);
     fclose(fp);
 
-    send_input(client_fd, "저장 완료!\n");
+    send_text(client_fd, "저장 완료!\n");
 }
 
 void print_all_students(int client_fd)
@@ -412,7 +414,7 @@ void print_all_students(int client_fd)
     fp = fopen(FILE_NAME, "rb");
     if (fp == NULL)
     {
-        send_input(client_fd, "데이터가 존재하지 않습니다!\n");
+        send_text(client_fd, "데이터가 존재하지 않습니다!\n");
         return;
     }
 
@@ -422,26 +424,26 @@ void print_all_students(int client_fd)
         return;
     }
 
-    send_input(client_fd, "모든 학생 정보!\n");
+    send_text(client_fd, "모든 학생 정보!\n");
 
     while (fread(&s, sizeof(STUDENT), 1, fp) == 1)
     {
         snprintf(msg, sizeof(msg), "\n[%d]\n", ++count);
-        send_input(client_fd, msg);
+        send_text(client_fd, msg);
         snprintf(msg, sizeof(msg), "ID : %d\n", s.id);
-        send_input(client_fd, msg);
+        send_text(client_fd, msg);
         snprintf(msg, sizeof(msg), "이름 : %s\n", s.name);
-        send_input(client_fd, msg);
+        send_text(client_fd, msg);
         snprintf(msg, sizeof(msg), "주소 : %s\n", s.address);
-        send_input(client_fd, msg);
+        send_text(client_fd, msg);
         snprintf(msg, sizeof(msg), "전화번호 : %s\n", s.number);
-        send_input(client_fd, msg);
+        send_text(client_fd, msg);
         snprintf(msg, sizeof(msg), "생년월일 :%s\n", s.birth);
-        send_input(client_fd, msg);
+        send_text(client_fd, msg);
     }
 
     if (count == 0)
-        send_input(client_fd, "데이터 없음\n");
+        send_text(client_fd, "데이터 없음\n");
 
     unlock_record(fp);
     fclose(fp);
@@ -458,7 +460,7 @@ void search_student(int client_fd)
     fp = fopen(FILE_NAME, "rb");
     if (fp == NULL)
     {
-        send_input(client_fd, "데이터 없음 \n");
+        send_text(client_fd, "데이터 없음 \n");
         return;
     }
 
@@ -473,32 +475,32 @@ void search_student(int client_fd)
         send_input(client_fd, "이름을 입력해주세요!\n");
         if (input_string_client(client_fd, name, sizeof(name)))
             break;
-        send_input(client_fd, "잘못입력하셨습니다.\n");
-        send_input(client_fd, "다시 입력해주세요.\n");
+        send_text(client_fd, "잘못입력하셨습니다.\n");
+        send_text(client_fd, "다시 입력해주세요.\n");
     }
 
     while (fread(&s, sizeof(STUDENT), 1, fp) == 1)
     {
         if (strcmp(s.name, name) == 0)
         {
-            send_input(client_fd, "검색하신 분의 정보입니다!\n");
+            send_text(client_fd, "검색하신 분의 정보입니다!\n");
             snprintf(msg, sizeof(msg), "ID : %d\n", s.id);
-            send_input(client_fd, msg);
+            send_text(client_fd, msg);
             snprintf(msg, sizeof(msg), "이름 : %s\n", s.name);
-            send_input(client_fd, msg);
+            send_text(client_fd, msg);
             snprintf(msg, sizeof(msg), "주소 : %s\n", s.address);
-            send_input(client_fd, msg);
+            send_text(client_fd, msg);
             snprintf(msg, sizeof(msg), "전화번호 : %s\n", s.number);
-            send_input(client_fd, msg);
+            send_text(client_fd, msg);
             snprintf(msg, sizeof(msg), "생년월일 : %s\n", s.birth);
-            send_input(client_fd, msg);
+            send_text(client_fd, msg);
             found = 1;
             break;
         }
     }
 
     if (!found)
-        send_input(client_fd, "검색하신 이름을 찾을 수 없습니다!\n");
+        send_text(client_fd, "검색하신 이름을 찾을 수 없습니다!\n");
 
     unlock_record(fp);
     fclose(fp);
@@ -516,7 +518,7 @@ void update_student(int client_fd)
     fp = fopen(FILE_NAME, "rb+");
     if (fp == NULL)
     {
-        send_input(client_fd, "데이터가 존재하지 않습니다!\n");
+        send_text(client_fd, "데이터가 존재하지 않습니다!\n");
         return;
     }
 
@@ -531,8 +533,8 @@ void update_student(int client_fd)
         send_input(client_fd, "\n수정 할 이름을 입력해주세요! \n");
         if (input_string_client(client_fd, name, sizeof(name)))
             break;
-        send_input(client_fd, "잘못입력하셨습니다.\n");
-        send_input(client_fd, "다시 입력해주세요.\n");
+        send_text(client_fd, "잘못입력하셨습니다.\n");
+        send_text(client_fd, "다시 입력해주세요.\n");
     }
 
     while (fread(&s, sizeof(STUDENT), 1, fp) == 1)
@@ -542,24 +544,24 @@ void update_student(int client_fd)
             found = 1;
             while (1)
             {
-                send_input(client_fd, "\n < 학생 정보 > \n");
+                send_text(client_fd, "\n < 학생 정보 > \n");
                 snprintf(msg, sizeof(msg), "1. ID : %d\n", s.id);
-                send_input(client_fd, msg);
+                send_text(client_fd, msg);
                 snprintf(msg, sizeof(msg), "2. 이름 : %s\n", s.name);
-                send_input(client_fd, msg);
+                send_text(client_fd, msg);
                 snprintf(msg, sizeof(msg), "3. 주소 : %s\n", s.address);
-                send_input(client_fd, msg);
+                send_text(client_fd, msg);
                 snprintf(msg, sizeof(msg), "4. 전화번호 : %s\n", s.number);
-                send_input(client_fd, msg);
+                send_text(client_fd, msg);
                 snprintf(msg, sizeof(msg), "5. 생년월일 : %s\n", s.birth);
-                send_input(client_fd, msg);
-                send_input(client_fd, "0. 수정 완료! (종료)\n");
+                send_text(client_fd, msg);
+                send_text(client_fd, "0. 수정 완료! (종료)\n");
                 send_input(client_fd, "수정하실 항목을 선택하세요 : ");
 
                 if (!input_int_client(client_fd, &menu))
                 {
-                    send_input(client_fd, "잘못입력하셨습니다!\n");
-                    send_input(client_fd, "다시 작성해주세요!\n");
+                    send_text(client_fd, "잘못입력하셨습니다!\n");
+                    send_text(client_fd, "다시 작성해주세요!\n");
                     continue;
                 }
 
@@ -571,8 +573,8 @@ void update_student(int client_fd)
                             send_input(client_fd, "수정할 ID : ");
                             if (input_int_client(client_fd, &s.id))
                                 break;
-                            send_input(client_fd, "잘못입력하셨습니다!\n");
-                            send_input(client_fd, "다시 작성해주세요!\n");
+                            send_text(client_fd, "잘못입력하셨습니다!\n");
+                            send_text(client_fd, "다시 작성해주세요!\n");
                         }
                         break;
 
@@ -582,8 +584,8 @@ void update_student(int client_fd)
                             send_input(client_fd, "수정할 이름 : ");
                             if (input_string_client(client_fd, s.name, sizeof(s.name)))
                                 break;
-                            send_input(client_fd, "잘못입력하셨습니다!\n");
-                            send_input(client_fd, "다시 작성해주세요!\n");
+                            send_text(client_fd, "잘못입력하셨습니다!\n");
+                            send_text(client_fd, "다시 작성해주세요!\n");
                         }
                         break;
 
@@ -593,8 +595,8 @@ void update_student(int client_fd)
                             send_input(client_fd, "수정할 주소 : ");
                             if (input_string_client(client_fd, s.address, sizeof(s.address)))
                                 break;
-                            send_input(client_fd, "잘못입력하셨습니다!\n");
-                            send_input(client_fd, "다시 작성해주세요!\n");
+                            send_text(client_fd, "잘못입력하셨습니다!\n");
+                            send_text(client_fd, "다시 작성해주세요!\n");
                         }
                         break;
 
@@ -604,8 +606,8 @@ void update_student(int client_fd)
                             send_input(client_fd, "수정할 전화번호 : ");
                             if (input_string_client(client_fd, s.number, sizeof(s.number)) && is_valid_phone(s.number))
                                 break;
-                            send_input(client_fd, "잘못입력하셨습니다!\n");
-                            send_input(client_fd, "다시 작성해주세요!\n");
+                            send_text(client_fd, "잘못입력하셨습니다!\n");
+                            send_text(client_fd, "다시 작성해주세요!\n");
                         }
                         break;
 
@@ -615,22 +617,22 @@ void update_student(int client_fd)
                             send_input(client_fd, "수정할 생년월일 : ");
                             if (input_string_client(client_fd, s.birth, sizeof(s.birth)) && is_valid_birth(s.birth))
                                 break;
-                            send_input(client_fd, "잘못입력하셨습니다!\n");
-                            send_input(client_fd, "다시 작성해주세요!\n");
+                            send_text(client_fd, "잘못입력하셨습니다!\n");
+                            send_text(client_fd, "다시 작성해주세요!\n");
                         }
                         break;
 
                     case 0:
                         fseek(fp, -(long)sizeof(STUDENT), SEEK_CUR);
                         fwrite(&s, sizeof(STUDENT), 1, fp);
-                        send_input(client_fd, "수정이 완료되었습니다!\n");
+                        send_text(client_fd, "수정이 완료되었습니다!\n");
                         unlock_record(fp);
                         fclose(fp);
                         return;
 
                     default:
-                        send_input(client_fd, "잘못입력하셨습니다!\n");
-                        send_input(client_fd, "다시 작성해주세요!\n");
+                        send_text(client_fd, "잘못입력하셨습니다!\n");
+                        send_text(client_fd, "다시 작성해주세요!\n");
                 }
             }
         }
@@ -638,8 +640,8 @@ void update_student(int client_fd)
 
     if (!found)
     {
-        send_input(client_fd, "해당되는 이름이 존재하지 않습니다!\n");
-        send_input(client_fd, "다시 작성해주세요!");
+        send_text(client_fd, "해당되는 이름이 존재하지 않습니다!\n");
+        send_text(client_fd, "다시 작성해주세요!");
     }
 
     unlock_record(fp);
@@ -659,7 +661,7 @@ void delete_student(int client_fd)
 
     if (fp == NULL || temp == NULL)
     {
-        send_input(client_fd, "파일에 오류가 생겼습니다!");
+        send_text(client_fd, "파일에 오류가 생겼습니다!");
         if (fp != NULL)
             fclose(fp);
         if (temp != NULL)
@@ -679,8 +681,8 @@ void delete_student(int client_fd)
         send_input(client_fd, "\n삭제할 이름을 입력해주세요!\n");
         if (input_string_client(client_fd, name, sizeof(name)))
             break;
-        send_input(client_fd, "잘못입력하셨습니다.\n");
-        send_input(client_fd, "다시 입력해주세요.\n");
+        send_text(client_fd, "잘못입력하셨습니다.\n");
+        send_text(client_fd, "다시 입력해주세요.\n");
     }
 
     send_input(client_fd, "정말 삭제 하시겠습니까? (Y/N)");
@@ -689,7 +691,7 @@ void delete_student(int client_fd)
 
     if (confirm[0] != 'y' && confirm[0] != 'Y')
     {
-        send_input(client_fd, "삭제가 취소되었습니다.\n");
+        send_text(client_fd, "삭제가 취소되었습니다.\n");
         unlock_record(fp);
         fclose(fp);
         fclose(temp);
@@ -715,11 +717,11 @@ void delete_student(int client_fd)
     {
         remove(FILE_NAME);
         rename("temp.db", FILE_NAME);
-        send_input(client_fd, "정상적으로 삭제되었습니다!\n");
+        send_text(client_fd, "정상적으로 삭제되었습니다!\n");
     }
     else
     {
         remove("temp.db");
-        send_input(client_fd, "존재하지 않습니다!\n");
+        send_text(client_fd, "존재하지 않습니다!\n");
     }
 }
